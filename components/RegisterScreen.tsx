@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { useAuth } from '../hooks/useAuth'
 import { validateEmail, validatePassword, validateConfirmPassword } from '../utils/validation'
+import { useBackgroundRotation } from '../hooks/useBackgroundRotation'
 
 interface RegisterScreenProps {
   onSwitchToLogin: () => void
@@ -21,6 +22,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const { register, loading, error, clearError } = useAuth()
+  const currentBackground = useBackgroundRotation(2000)
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
@@ -60,7 +62,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin 
 
   return (
     <ImageBackground 
-      source={require('../assets/crypto2.jpg')} 
+      source={currentBackground} 
       style={styles.container}
       resizeMode="cover"
     >

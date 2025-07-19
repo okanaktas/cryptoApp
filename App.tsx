@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
-import { SafeAreaView, StyleSheet, ActivityIndicator, View, Text, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native'
 import { useAuth } from './hooks/useAuth'
 import { LoginScreen } from './components/LoginScreen'
 import { RegisterScreen } from './components/RegisterScreen'
@@ -11,42 +11,41 @@ export default function App() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.loadingText}>Yükleniyor...</Text>
-      </SafeAreaView>
+      </View>
     )
   }
 
   if (user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeTitle}>Hoş Geldiniz!</Text>
           <Text style={styles.welcomeText}>{user.email}</Text>
           <Text style={styles.comingSoon}>Crypto listesi yakında burada olacak!</Text>
         </View>
         <StatusBar style="auto" />
-      </SafeAreaView>
+      </View>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {isLogin ? (
         <LoginScreen onSwitchToRegister={() => setIsLogin(false)} />
       ) : (
         <RegisterScreen onSwitchToLogin={() => setIsLogin(true)} />
       )}
       <StatusBar style="auto" />
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
   },
   loadingContainer: {
     flex: 1,
