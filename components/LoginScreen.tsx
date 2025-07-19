@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  ImageBackground
 } from 'react-native'
 import { useAuth } from '../hooks/useAuth'
 import { validateEmail } from '../utils/validation'
+import { useBackgroundRotation } from '../hooks/useBackgroundRotation'
 
 interface LoginScreenProps {
   onSwitchToRegister: () => void
@@ -19,6 +21,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSwitchToRegister }) 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { login, loading, error, clearError } = useAuth()
+  const currentBackground = useBackgroundRotation(2000)
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,77 +43,94 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSwitchToRegister }) 
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Crypto App</Text>
-      <Text style={styles.subtitle}>Giriş Yap</Text>
-      
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="E-posta"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+    <ImageBackground 
+      source={currentBackground} 
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Crypto App</Text>
+        <Text style={styles.subtitle}>Giriş Yap</Text>
         
-        <TextInput
-          style={styles.input}
-          placeholder="Şifre"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-        />
-        
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Giriş Yap</Text>
-          )}
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.switchButton}
-          onPress={onSwitchToRegister}
-        >
-          <Text style={styles.switchText}>
-            Hesabınız yok mu? Kayıt olun
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="E-posta"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholderTextColor="rgba(0,0,0,0.6)"
+          />
+          
+          <TextInput
+            style={styles.input}
+            placeholder="Şifre"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            placeholderTextColor="rgba(0,0,0,0.6)"
+          />
+          
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Giriş Yap</Text>
+            )}
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.switchButton}
+            onPress={onSwitchToRegister}
+          >
+            <Text style={styles.switchText}>
+              Hesabınız yok mu? Kayıt olun
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  overlay: {
+    flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: 'rgba(0,0,0,0.3)'
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    color: '#333'
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3
   },
   subtitle: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 30,
-    color: '#666'
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2
   },
   form: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.9)',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
@@ -118,18 +138,18 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 3.84,
     elevation: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgba(0,0,0,0.2)',
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#fff'
+    backgroundColor: 'rgba(255,255,255,0.8)'
   },
   button: {
     backgroundColor: '#007AFF',
@@ -151,6 +171,7 @@ const styles = StyleSheet.create({
   },
   switchText: {
     color: '#007AFF',
-    fontSize: 14
+    fontSize: 14,
+    fontWeight: '500'
   }
 }) 
