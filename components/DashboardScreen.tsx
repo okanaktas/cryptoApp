@@ -156,9 +156,6 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dashboard</Text>
-      <Text style={styles.subtitle}>Favori Coinleriniz</Text>
-      
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>⭐</Text>
@@ -199,19 +196,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666'
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    paddingTop: 20,
-    color: '#333'
-  },
-  subtitle: {
-    fontSize: 18,
-    textAlign: 'center',
-    paddingBottom: 20,
-    color: '#666'
-  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

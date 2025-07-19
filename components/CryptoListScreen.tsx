@@ -175,7 +175,6 @@ export const CryptoListScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Crypto Piyasası</Text>
       <FlatList
         data={coins}
         renderItem={renderCoin}
@@ -206,13 +205,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666'
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 20,
-    color: '#333'
-  },
+
   listContainer: {
     paddingHorizontal: 16
   },

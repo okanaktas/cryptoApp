@@ -39,7 +39,7 @@ export const MainScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          {activeTab === 'crypto' ? 'Crypto Piyasası' : 'Dashboard'}
+          {activeTab === 'crypto' ? 'Crypto Piyasası' : 'Favori Coinlerim'}
         </Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutIcon}>🚪</Text>
