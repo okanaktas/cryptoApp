@@ -14,10 +14,13 @@ import { cryptoApi, CryptoCoin } from '../services/cryptoApi'
 import { favoritesApi } from '../lib/favorites'
 import { useAuth } from '../hooks/useAuth'
 import { useCrypto } from '../contexts/CryptoContext'
+import { CoinDetailSheet } from './CoinDetailSheet'
 
 export const CryptoListScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [selectedCoin, setSelectedCoin] = useState<CryptoCoin | null>(null)
+  const [isDetailSheetVisible, setIsDetailSheetVisible] = useState(false)
   const { user } = useAuth()
   const { coins, setCoins, isLoading, setIsLoading, lastFetchTime, setLastFetchTime } = useCrypto()
 
@@ -129,7 +132,14 @@ export const CryptoListScreen: React.FC = () => {
     const isFavorite = favorites.has(item.id)
 
     return (
-      <View style={styles.coinItem}>
+      <TouchableOpacity
+        style={styles.coinItem}
+        onPress={() => {
+          setSelectedCoin(item)
+          setIsDetailSheetVisible(true)
+        }}
+        activeOpacity={0.7}
+      >
         <View style={styles.coinInfo}>
           <Image 
             source={{ uri: item.image }} 
@@ -152,13 +162,16 @@ export const CryptoListScreen: React.FC = () => {
 
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => toggleFavorite(item)}
+          onPress={(e) => {
+            e.stopPropagation()
+            toggleFavorite(item)
+          }}
         >
           <Text style={[styles.favoriteIcon, { color: isFavorite ? '#FFD700' : '#ccc' }]}>
             ★
           </Text>
         </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
     )
   }
 
@@ -186,6 +199,17 @@ export const CryptoListScreen: React.FC = () => {
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
+      />
+      
+      <CoinDetailSheet
+        coin={selectedCoin}
+        isVisible={isDetailSheetVisible}
+        onClose={() => {
+          setIsDetailSheetVisible(false)
+          setSelectedCoin(null)
+        }}
+        onToggleFavorite={toggleFavorite}
+        isFavorite={selectedCoin ? favorites.has(selectedCoin.id) : false}
       />
     </View>
   )
