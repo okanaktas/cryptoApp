@@ -25,17 +25,34 @@ export const CryptoListScreen: React.FC = () => {
     try {
       setLoading(true)
       const response = await cryptoApi.getCoins(100)
-      setCoins(response.data.coins)
+      setCoins(response.data)
       
-      // Favorileri kontrol et
+      // Favorileri kontrol et (hata olursa sessizce geç)
       if (user) {
-        const userFavorites = await favoritesApi.getFavorites(user.id)
-        const favoriteUuids = new Set(userFavorites.map(fav => fav.coin_uuid))
-        setFavorites(favoriteUuids)
+        try {
+          const userFavorites = await favoritesApi.getFavorites(user.id)
+          const favoriteIds = new Set(userFavorites.map(fav => fav.coin_uuid))
+          setFavorites(favoriteIds)
+        } catch (favoritesError) {
+          console.warn('Favorites not loaded:', favoritesError)
+          // Favoriler yüklenemezse boş set kullan
+          setFavorites(new Set())
+        }
       }
     } catch (error) {
-      Alert.alert('Hata', 'Crypto verileri yüklenirken hata oluştu')
       console.error('Error fetching coins:', error)
+      
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      
+      if (errorMessage.includes('Rate limit')) {
+        Alert.alert(
+          'API Limit Aşıldı', 
+          'Çok fazla istek gönderildi. Lütfen 1 dakika bekleyip tekrar deneyin.',
+          [{ text: 'Tamam' }]
+        )
+      } else {
+        Alert.alert('Hata', 'Crypto verileri yüklenirken hata oluştu')
+      }
     } finally {
       setLoading(false)
     }
@@ -43,70 +60,89 @@ export const CryptoListScreen: React.FC = () => {
 
   const onRefresh = async () => {
     setRefreshing(true)
-    await fetchCoins()
-    setRefreshing(false)
+    try {
+      // Cache'i temizle ve yeni veri al
+      cryptoApi.clearCache()
+      await fetchCoins()
+    } catch (error) {
+      console.error('Refresh error:', error)
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   const toggleFavorite = async (coin: CryptoCoin) => {
-    if (!user) return
+    if (!user) {
+      Alert.alert('Uyarı', 'Favori eklemek için giriş yapmanız gerekiyor')
+      return
+    }
 
     try {
-      const isFavorite = favorites.has(coin.uuid)
+      const isFavorite = favorites.has(coin.id)
       
       if (isFavorite) {
-        await favoritesApi.removeFromFavorites(user.id, coin.uuid)
+        await favoritesApi.removeFromFavorites(user.id, coin.id)
         setFavorites(prev => {
           const newSet = new Set(prev)
-          newSet.delete(coin.uuid)
+          newSet.delete(coin.id)
           return newSet
         })
       } else {
         await favoritesApi.addToFavorites(user.id, coin)
-        setFavorites(prev => new Set(prev).add(coin.uuid))
+        setFavorites(prev => new Set(prev).add(coin.id))
       }
     } catch (error) {
-      Alert.alert('Hata', 'Favori işlemi sırasında hata oluştu')
       console.error('Error toggling favorite:', error)
+      
+      // Tablo yoksa kullanıcıya bilgi ver
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('42P01') || errorMessage.includes('relation "favorites" does not exist')) {
+        Alert.alert(
+          'Favoriler Henüz Hazır Değil', 
+          'Favori özelliği yakında aktif olacak. Lütfen daha sonra tekrar deneyin.',
+          [{ text: 'Tamam' }]
+        )
+      } else {
+        Alert.alert('Hata', 'Favori işlemi sırasında hata oluştu')
+      }
     }
   }
 
-  const formatPrice = (price: string) => {
-    const numPrice = parseFloat(price)
-    if (numPrice < 1) {
-      return `$${numPrice.toFixed(4)}`
+  const formatPrice = (price: number) => {
+    if (price < 1) {
+      return `$${price.toFixed(4)}`
     }
-    return `$${numPrice.toFixed(2)}`
+    return `$${price.toFixed(2)}`
   }
 
-  const formatChange = (change: string) => {
-    const numChange = parseFloat(change)
-    const isPositive = numChange >= 0
+  const formatChange = (change: number) => {
+    const isPositive = change >= 0
     return {
-      value: `${isPositive ? '+' : ''}${numChange.toFixed(2)}%`,
+      value: `${isPositive ? '+' : ''}${change.toFixed(2)}%`,
       color: isPositive ? '#34C759' : '#FF3B30'
     }
   }
 
   const renderCoin = ({ item }: { item: CryptoCoin }) => {
-    const changeData = formatChange(item.change)
-    const isFavorite = favorites.has(item.uuid)
+    const changeData = formatChange(item.price_change_percentage_24h)
+    const isFavorite = favorites.has(item.id)
 
     return (
       <View style={styles.coinItem}>
         <View style={styles.coinInfo}>
           <Image 
-            source={{ uri: item.iconUrl }} 
+            source={{ uri: item.image }} 
             style={styles.coinIcon}
             defaultSource={require('../assets/icon.png')}
           />
           <View style={styles.coinDetails}>
             <Text style={styles.coinName}>{item.name}</Text>
-            <Text style={styles.coinSymbol}>{item.symbol}</Text>
+            <Text style={styles.coinSymbol}>{item.symbol.toUpperCase()}</Text>
           </View>
         </View>
         
         <View style={styles.coinPrice}>
-          <Text style={styles.priceText}>{formatPrice(item.price)}</Text>
+          <Text style={styles.priceText}>{formatPrice(item.current_price)}</Text>
           <Text style={[styles.changeText, { color: changeData.color }]}>
             {changeData.value}
           </Text>
@@ -143,7 +179,7 @@ export const CryptoListScreen: React.FC = () => {
       <FlatList
         data={coins}
         renderItem={renderCoin}
-        keyExtractor={(item) => item.uuid}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }

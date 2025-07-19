@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
-import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native'
 import { useAuth } from './hooks/useAuth'
 import { LoginScreen } from './components/LoginScreen'
 import { RegisterScreen } from './components/RegisterScreen'
+import { MainScreen } from './components/MainScreen'
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true)
@@ -19,16 +20,7 @@ export default function App() {
   }
 
   if (user) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeTitle}>Hoş Geldiniz!</Text>
-          <Text style={styles.welcomeText}>{user.email}</Text>
-          <Text style={styles.comingSoon}>Crypto listesi yakında burada olacak!</Text>
-        </View>
-        <StatusBar style="auto" />
-      </View>
-    )
+    return <MainScreen />
   }
 
   return (
@@ -57,27 +49,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#666'
-  },
-  welcomeContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333'
-  },
-  welcomeText: {
-    fontSize: 18,
-    marginBottom: 20,
-    color: '#666'
-  },
-  comingSoon: {
-    fontSize: 16,
-    color: '#007AFF',
-    textAlign: 'center'
   }
 })

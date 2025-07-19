@@ -39,8 +39,8 @@ export const DashboardScreen: React.FC = () => {
             const coinData = await cryptoApi.getCoinDetails(favorite.coin_uuid)
             return {
               ...favorite,
-              currentPrice: coinData.data.coin.price,
-              currentChange: coinData.data.coin.change
+              currentPrice: coinData.market_data?.current_price?.usd?.toString(),
+              currentChange: coinData.market_data?.price_change_percentage_24h?.toString()
             }
           } catch (error) {
             console.error(`Error fetching data for ${favorite.coin_symbol}:`, error)
@@ -51,8 +51,15 @@ export const DashboardScreen: React.FC = () => {
       
       setFavorites(favoritesWithData)
     } catch (error) {
-      Alert.alert('Hata', 'Favoriler yüklenirken hata oluştu')
       console.error('Error fetching favorites:', error)
+      
+      // Tablo yoksa boş liste göster
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('42P01') || errorMessage.includes('relation "favorites" does not exist')) {
+        setFavorites([])
+      } else {
+        Alert.alert('Hata', 'Favoriler yüklenirken hata oluştu')
+      }
     } finally {
       setLoading(false)
     }

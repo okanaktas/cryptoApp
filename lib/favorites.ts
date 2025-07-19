@@ -39,10 +39,10 @@ export const favoritesApi = {
         .from('favorites')
         .insert({
           user_id: userId,
-          coin_uuid: coin.uuid,
+          coin_uuid: coin.id,
           coin_symbol: coin.symbol,
           coin_name: coin.name,
-          coin_icon: coin.iconUrl
+          coin_icon: coin.image
         })
 
       if (error) {
