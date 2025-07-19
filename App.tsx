@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native'
+import { AuthProvider } from './contexts/AuthContext'
+import { CryptoProvider } from './contexts/CryptoContext'
 import { useAuth } from './hooks/useAuth'
 import { LoginScreen } from './components/LoginScreen'
 import { RegisterScreen } from './components/RegisterScreen'
 import { MainScreen } from './components/MainScreen'
 
-export default function App() {
+function AppContent() {
   const [isLogin, setIsLogin] = useState(true)
   const { user, loading } = useAuth()
 
@@ -32,6 +34,16 @@ export default function App() {
       )}
       <StatusBar style="auto" />
     </View>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CryptoProvider>
+        <AppContent />
+      </CryptoProvider>
+    </AuthProvider>
   )
 }
 

@@ -13,6 +13,7 @@ import {
 import { cryptoApi, CryptoCoin } from '../services/cryptoApi'
 import { favoritesApi, FavoriteCoin } from '../lib/favorites'
 import { useAuth } from '../hooks/useAuth'
+import { useCrypto } from '../contexts/CryptoContext'
 
 interface FavoriteWithData extends FavoriteCoin {
   currentPrice?: string
@@ -21,33 +22,25 @@ interface FavoriteWithData extends FavoriteCoin {
 
 export const DashboardScreen: React.FC = () => {
   const [favorites, setFavorites] = useState<FavoriteWithData[]>([])
-  const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const { user } = useAuth()
+  const { coins } = useCrypto()
 
   const fetchFavorites = async () => {
     if (!user) return
 
     try {
-      setLoading(true)
       const userFavorites = await favoritesApi.getFavorites(user.id)
       
-      // Favori coinlerin güncel verilerini al
-      const favoritesWithData = await Promise.all(
-        userFavorites.map(async (favorite) => {
-          try {
-            const coinData = await cryptoApi.getCoinDetails(favorite.coin_uuid)
-            return {
-              ...favorite,
-              currentPrice: coinData.market_data?.current_price?.usd?.toString(),
-              currentChange: coinData.market_data?.price_change_percentage_24h?.toString()
-            }
-          } catch (error) {
-            console.error(`Error fetching data for ${favorite.coin_symbol}:`, error)
-            return favorite
-          }
-        })
-      )
+      // Global state'den coin verilerini kullan
+      const favoritesWithData = userFavorites.map((favorite) => {
+        const coinData = coins.find(coin => coin.id === favorite.coin_uuid)
+        return {
+          ...favorite,
+          currentPrice: coinData?.current_price?.toString(),
+          currentChange: coinData?.price_change_percentage_24h?.toString()
+        }
+      })
       
       setFavorites(favoritesWithData)
     } catch (error) {
@@ -60,8 +53,6 @@ export const DashboardScreen: React.FC = () => {
       } else {
         Alert.alert('Hata', 'Favoriler yüklenirken hata oluştu')
       }
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -110,6 +101,7 @@ export const DashboardScreen: React.FC = () => {
             source={{ uri: item.coin_icon }} 
             style={styles.coinIcon}
             defaultSource={require('../assets/icon.png')}
+            onError={() => console.log('Failed to load icon for:', item.coin_name)}
           />
           <View style={styles.coinDetails}>
             <Text style={styles.coinName}>{item.coin_name}</Text>
@@ -143,9 +135,9 @@ export const DashboardScreen: React.FC = () => {
 
   useEffect(() => {
     fetchFavorites()
-  }, [user])
+  }, [user, coins])
 
-  if (loading) {
+  if (favorites.length === 0 && coins.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />

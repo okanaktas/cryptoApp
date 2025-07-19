@@ -13,19 +13,20 @@ import {
 import { cryptoApi, CryptoCoin } from '../services/cryptoApi'
 import { favoritesApi } from '../lib/favorites'
 import { useAuth } from '../hooks/useAuth'
+import { useCrypto } from '../contexts/CryptoContext'
 
 export const CryptoListScreen: React.FC = () => {
-  const [coins, setCoins] = useState<CryptoCoin[]>([])
-  const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const { user } = useAuth()
+  const { coins, setCoins, isLoading, setIsLoading, lastFetchTime, setLastFetchTime } = useCrypto()
 
   const fetchCoins = async () => {
     try {
-      setLoading(true)
+      setIsLoading(true)
       const response = await cryptoApi.getCoins(100)
       setCoins(response.data)
+      setLastFetchTime(Date.now())
       
       // Favorileri kontrol et (hata olursa sessizce geç)
       if (user) {
@@ -54,7 +55,7 @@ export const CryptoListScreen: React.FC = () => {
         Alert.alert('Hata', 'Crypto verileri yüklenirken hata oluştu')
       }
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -134,6 +135,7 @@ export const CryptoListScreen: React.FC = () => {
             source={{ uri: item.image }} 
             style={styles.coinIcon}
             defaultSource={require('../assets/icon.png')}
+            onError={() => console.log('Failed to load icon for:', item.name)}
           />
           <View style={styles.coinDetails}>
             <Text style={styles.coinName}>{item.name}</Text>
@@ -164,7 +166,7 @@ export const CryptoListScreen: React.FC = () => {
     fetchCoins()
   }, [user])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
