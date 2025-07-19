@@ -207,7 +207,8 @@ const styles = StyleSheet.create({
   },
 
   listContainer: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    paddingTop: 10
   },
   coinItem: {
     flexDirection: 'row',

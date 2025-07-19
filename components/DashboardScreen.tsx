@@ -221,7 +221,8 @@ const styles = StyleSheet.create({
     lineHeight: 24
   },
   listContainer: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    paddingTop: 10
   },
   favoriteItem: {
     flexDirection: 'row',

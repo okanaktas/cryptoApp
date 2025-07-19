@@ -6,6 +6,7 @@ import {
   Text,
   Alert
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { CryptoListScreen } from './CryptoListScreen'
 import { DashboardScreen } from './DashboardScreen'
 import { useAuth } from '../hooks/useAuth'
@@ -42,7 +43,7 @@ export const MainScreen: React.FC = () => {
           {activeTab === 'crypto' ? 'Crypto Piyasası' : 'Favori Coinlerim'}
         </Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>🚪</Text>
+          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
         </TouchableOpacity>
       </View>
 
@@ -105,11 +106,10 @@ const styles = StyleSheet.create({
   logoutButton: {
     padding: 8
   },
-  logoutIcon: {
-    fontSize: 24
-  },
+
   content: {
-    flex: 1
+    flex: 1,
+    paddingTop: 10
   },
   bottomNav: {
     flexDirection: 'row',
