@@ -176,6 +176,9 @@ export const CoinDetailSheet: React.FC<CoinDetailSheetProps> = ({
               Son güncelleme: {new Date(coin.last_updated).toLocaleString('tr-TR')}
             </Text>
           </View>
+          
+          {/* Bottom Spacing */}
+          <View style={styles.bottomSpacing} />
         </ScrollView>
       </View>
     </Modal>
@@ -191,8 +194,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '80%',
-    padding: 20,
+    maxHeight: '85%',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
   handleIndicator: {
     width: 40,
@@ -316,12 +321,17 @@ const styles = StyleSheet.create({
   },
   lastUpdated: {
     alignItems: 'center',
-    paddingTop: 10,
+    paddingTop: 15,
+    paddingBottom: 10,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    marginTop: 10,
   },
   lastUpdatedText: {
     fontSize: 12,
     color: '#999',
+  },
+  bottomSpacing: {
+    height: 40,
   },
 }) 
