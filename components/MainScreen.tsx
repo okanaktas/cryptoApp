@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { CryptoListScreen } from './CryptoListScreen'
 import { DashboardScreen } from './DashboardScreen'
+import { FavoritesScreen } from './FavoritesScreen'
 import { useAuth } from '../hooks/useAuth'
 
 export const MainScreen: React.FC = () => {
@@ -55,7 +56,7 @@ export const MainScreen: React.FC = () => {
       case 'dashboard':
         return <DashboardScreen />
       case 'favorites':
-        return <DashboardScreen /> // Favorites content will be shown in enhanced DashboardScreen
+        return <FavoritesScreen />
       default:
         return <CryptoListScreen />
     }

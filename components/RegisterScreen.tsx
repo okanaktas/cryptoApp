@@ -10,7 +10,7 @@ import {
   ImageBackground
 } from 'react-native'
 import { useAuth } from '../hooks/useAuth'
-import { validateEmail, validatePassword, validateConfirmPassword, validateUsername, getPasswordStrength } from '../utils/validation'
+import { validateEmail, validatePassword, validateConfirmPassword, getPasswordStrength } from '../utils/validation'
 import { useBackgroundRotation } from '../hooks/useBackgroundRotation'
 
 interface RegisterScreenProps {
@@ -18,25 +18,13 @@ interface RegisterScreenProps {
 }
 
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin }) => {
-  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [usernameError, setUsernameError] = useState('')
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const { register, loading, error, clearError } = useAuth()
   const currentBackground = useBackgroundRotation(2000)
-
-  const handleUsernameChange = (text: string) => {
-    setUsername(text)
-    if (text) {
-      const validation = validateUsername(text)
-      setUsernameError(validation.isValid ? '' : validation.message || '')
-    } else {
-      setUsernameError('')
-    }
-  }
 
   const handleEmailChange = (text: string) => {
     setEmail(text)
@@ -60,14 +48,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin 
   const passwordStrength = getPasswordStrength(password)
 
   const handleRegister = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun')
-      return
-    }
-
-    const usernameValidation = validateUsername(username)
-    if (!usernameValidation.isValid) {
-      Alert.alert('Hata', usernameValidation.message || 'Geçersiz kullanıcı adı')
       return
     }
 
@@ -112,19 +94,6 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin 
         <Text style={styles.subtitle}>Kayıt Ol</Text>
         
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input, usernameError ? styles.inputError : null]}
-              placeholder="Kullanıcı Adı"
-              value={username}
-              onChangeText={handleUsernameChange}
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor="rgba(0,0,0,0.6)"
-            />
-            {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
-          </View>
-
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.input, emailError ? styles.inputError : null]}
