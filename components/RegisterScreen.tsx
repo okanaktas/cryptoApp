@@ -10,7 +10,7 @@ import {
   ImageBackground
 } from 'react-native'
 import { useAuth } from '../hooks/useAuth'
-import { validateEmail, validatePassword, validateConfirmPassword } from '../utils/validation'
+import { validateEmail, validatePassword, validateConfirmPassword, validateUsername, getPasswordStrength } from '../utils/validation'
 import { useBackgroundRotation } from '../hooks/useBackgroundRotation'
 
 interface RegisterScreenProps {
@@ -18,15 +18,56 @@ interface RegisterScreenProps {
 }
 
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin }) => {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [usernameError, setUsernameError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const { register, loading, error, clearError } = useAuth()
   const currentBackground = useBackgroundRotation(2000)
 
+  const handleUsernameChange = (text: string) => {
+    setUsername(text)
+    if (text) {
+      const validation = validateUsername(text)
+      setUsernameError(validation.isValid ? '' : validation.message || '')
+    } else {
+      setUsernameError('')
+    }
+  }
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text)
+    if (text && !validateEmail(text)) {
+      setEmailError('Geçerli bir e-posta adresi girin')
+    } else {
+      setEmailError('')
+    }
+  }
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text)
+    if (text) {
+      const validation = validatePassword(text)
+      setPasswordError(validation.isValid ? '' : validation.message || '')
+    } else {
+      setPasswordError('')
+    }
+  }
+
+  const passwordStrength = getPasswordStrength(password)
+
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun')
+      return
+    }
+
+    const usernameValidation = validateUsername(username)
+    if (!usernameValidation.isValid) {
+      Alert.alert('Hata', usernameValidation.message || 'Geçersiz kullanıcı adı')
       return
     }
 
@@ -71,36 +112,78 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ onSwitchToLogin 
         <Text style={styles.subtitle}>Kayıt Ol</Text>
         
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="E-posta"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            placeholderTextColor="rgba(0,0,0,0.6)"
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Şifre"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            placeholderTextColor="rgba(0,0,0,0.6)"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, usernameError ? styles.inputError : null]}
+              placeholder="Kullanıcı Adı"
+              value={username}
+              onChangeText={handleUsernameChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
+          </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Şifre Tekrar"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            placeholderTextColor="rgba(0,0,0,0.6)"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, emailError ? styles.inputError : null]}
+              placeholder="E-posta"
+              value={email}
+              onChangeText={handleEmailChange}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          </View>
+          
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, passwordError ? styles.inputError : null]}
+              placeholder="Şifre"
+              value={password}
+              onChangeText={handlePasswordChange}
+              secureTextEntry
+              autoCapitalize="none"
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {password.length > 0 && (
+              <View style={styles.passwordStrengthContainer}>
+                <View style={styles.strengthBar}>
+                  <View 
+                    style={[
+                      styles.strengthFill, 
+                      { 
+                        width: `${(passwordStrength.strength / 5) * 100}%`,
+                        backgroundColor: passwordStrength.color 
+                      }
+                    ]} 
+                  />
+                </View>
+                <Text style={[styles.strengthText, { color: passwordStrength.color }]}>
+                  {passwordStrength.text}
+                </Text>
+              </View>
+            )}
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Şifre Tekrar"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {confirmPassword.length > 0 && !validateConfirmPassword(password, confirmPassword) && (
+              <Text style={styles.errorText}>Şifreler eşleşmiyor</Text>
+            )}
+          </View>
           
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -170,21 +253,56 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  inputContainer: {
+    marginBottom: 15,
+  },
   input: {
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.2)',
     borderRadius: 8,
     padding: 15,
-    marginBottom: 15,
     fontSize: 16,
     backgroundColor: 'rgba(255,255,255,0.8)'
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+    borderWidth: 2,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
+  },
+  passwordStrengthContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginLeft: 5,
+  },
+  strengthBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: '500',
+    minWidth: 40,
   },
   button: {
     backgroundColor: '#34C759',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 15
+    marginBottom: 15,
+    marginTop: 10,
   },
   buttonDisabled: {
     backgroundColor: '#ccc'

@@ -7,10 +7,17 @@ import { useAuth } from './hooks/useAuth'
 import { LoginScreen } from './components/LoginScreen'
 import { RegisterScreen } from './components/RegisterScreen'
 import { MainScreen } from './components/MainScreen'
+import { LaunchScreen } from './components/LaunchScreen'
 
 function AppContent() {
   const [isLogin, setIsLogin] = useState(true)
+  const [showLaunchScreen, setShowLaunchScreen] = useState(true)
   const { user, loading } = useAuth()
+
+  // Launch screen gösteriliyor
+  if (showLaunchScreen) {
+    return <LaunchScreen onFinish={() => setShowLaunchScreen(false)} />
+  }
 
   if (loading) {
     return (

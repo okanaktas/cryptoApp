@@ -10,7 +10,7 @@ import {
   ImageBackground
 } from 'react-native'
 import { useAuth } from '../hooks/useAuth'
-import { validateEmail } from '../utils/validation'
+import { validateEmail, validateUsername } from '../utils/validation'
 import { useBackgroundRotation } from '../hooks/useBackgroundRotation'
 
 interface LoginScreenProps {
@@ -18,14 +18,42 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onSwitchToRegister }) => {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [usernameError, setUsernameError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const { login, loading, error, clearError } = useAuth()
   const currentBackground = useBackgroundRotation(2000)
 
+  const handleUsernameChange = (text: string) => {
+    setUsername(text)
+    if (text) {
+      const validation = validateUsername(text)
+      setUsernameError(validation.isValid ? '' : validation.message || '')
+    } else {
+      setUsernameError('')
+    }
+  }
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text)
+    if (text && !validateEmail(text)) {
+      setEmailError('Geçerli bir e-posta adresi girin')
+    } else {
+      setEmailError('')
+    }
+  }
+
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!username || !email || !password) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun')
+      return
+    }
+
+    const usernameValidation = validateUsername(username)
+    if (!usernameValidation.isValid) {
+      Alert.alert('Hata', usernameValidation.message || 'Geçersiz kullanıcı adı')
       return
     }
 
@@ -53,26 +81,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSwitchToRegister }) 
         <Text style={styles.subtitle}>Giriş Yap</Text>
         
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="E-posta"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            placeholderTextColor="rgba(0,0,0,0.6)"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, usernameError ? styles.inputError : null]}
+              placeholder="Kullanıcı Adı"
+              value={username}
+              onChangeText={handleUsernameChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, emailError ? styles.inputError : null]}
+              placeholder="E-posta"
+              value={email}
+              onChangeText={handleEmailChange}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          </View>
           
-          <TextInput
-            style={styles.input}
-            placeholder="Şifre"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            placeholderTextColor="rgba(0,0,0,0.6)"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Şifre"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              placeholderTextColor="rgba(0,0,0,0.6)"
+            />
+          </View>
           
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -142,21 +188,34 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  inputContainer: {
+    marginBottom: 15,
+  },
   input: {
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.2)',
     borderRadius: 8,
     padding: 15,
-    marginBottom: 15,
     fontSize: 16,
     backgroundColor: 'rgba(255,255,255,0.8)'
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+    borderWidth: 2,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
   },
   button: {
     backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 15
+    marginBottom: 15,
+    marginTop: 10,
   },
   buttonDisabled: {
     backgroundColor: '#ccc'
