@@ -12,7 +12,7 @@ import { DashboardScreen } from './DashboardScreen'
 import { useAuth } from '../hooks/useAuth'
 
 export const MainScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'crypto' | 'dashboard'>('crypto')
+  const [activeTab, setActiveTab] = useState<'market' | 'dashboard' | 'favorites'>('market')
   const { logout } = useAuth()
 
   const handleLogout = async () => {
@@ -35,12 +35,38 @@ export const MainScreen: React.FC = () => {
     )
   }
 
+  const getHeaderTitle = () => {
+    switch (activeTab) {
+      case 'market':
+        return 'Crypto Piyasası'
+      case 'dashboard':
+        return 'Dashboard'
+      case 'favorites':
+        return 'Favori Coinlerim'
+      default:
+        return 'Crypto App'
+    }
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'market':
+        return <CryptoListScreen />
+      case 'dashboard':
+        return <DashboardScreen />
+      case 'favorites':
+        return <DashboardScreen /> // Favorites content will be shown in enhanced DashboardScreen
+      default:
+        return <CryptoListScreen />
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          {activeTab === 'crypto' ? 'Crypto Piyasası' : 'Favori Coinlerim'}
+          {getHeaderTitle()}
         </Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
@@ -49,19 +75,19 @@ export const MainScreen: React.FC = () => {
 
       {/* Content */}
       <View style={styles.content}>
-        {activeTab === 'crypto' ? <CryptoListScreen /> : <DashboardScreen />}
+        {renderContent()}
       </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity
-          style={[styles.navItem, activeTab === 'crypto' && styles.activeNavItem]}
-          onPress={() => setActiveTab('crypto')}
+          style={[styles.navItem, activeTab === 'market' && styles.activeNavItem]}
+          onPress={() => setActiveTab('market')}
         >
-          <Text style={[styles.navIcon, activeTab === 'crypto' && styles.activeNavIcon]}>
+          <Text style={[styles.navIcon, activeTab === 'market' && styles.activeNavIcon]}>
             📊
           </Text>
-          <Text style={[styles.navText, activeTab === 'crypto' && styles.activeNavText]}>
+          <Text style={[styles.navText, activeTab === 'market' && styles.activeNavText]}>
             Piyasa
           </Text>
         </TouchableOpacity>
@@ -71,9 +97,21 @@ export const MainScreen: React.FC = () => {
           onPress={() => setActiveTab('dashboard')}
         >
           <Text style={[styles.navIcon, activeTab === 'dashboard' && styles.activeNavIcon]}>
-            ⭐
+            📈
           </Text>
           <Text style={[styles.navText, activeTab === 'dashboard' && styles.activeNavText]}>
+            Dashboard
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navItem, activeTab === 'favorites' && styles.activeNavItem]}
+          onPress={() => setActiveTab('favorites')}
+        >
+          <Text style={[styles.navIcon, activeTab === 'favorites' && styles.activeNavIcon]}>
+            ⭐
+          </Text>
+          <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>
             Favoriler
           </Text>
         </TouchableOpacity>
